@@ -1,0 +1,280 @@
+/* ============================================
+   Advanced UI Enhancements
+   ============================================ */
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Enhanced cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Enhanced buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 8px 20px;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    border: none;
+}
+
+/* Enhanced tables */
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 12px 15px;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f0f9ff !important;
+}
+
+/* Enhanced forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 3px rgba(25,135,84,0.1);
+}
+
+/* Enhanced badges */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+/* Sidebar enhancements */
+.sidebar-link {
+    border-radius: 8px;
+    margin: 4px 8px;
+    padding: 10px 16px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background: rgba(25, 135, 84, 0.1);
+    transform: translateX(-4px);
+}
+
+.sidebar-link.active {
+    background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+/* Dark Mode Styles */
+[data-theme="dark"] {
+    --bg-primary: #1a1d23;
+    --bg-secondary: #242830;
+    --bg-tertiary: #2d3139;
+    --text-primary: #e4e6ea;
+    --text-secondary: #a8abb3;
+    --border-color: #3a3f47;
+    --hover-bg: #2d3139;
+}
+
+[data-theme="dark"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .table {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .sidebar {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .sidebar-link {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(25, 135, 84, 0.2);
+    color: var(--text-primary);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+/* Loading animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Print button styling */
+.btn-print {
+    background: linear-gradient(135deg, #6f42c1 0%, #59359a 100%);
+    color: white;
+    border: none;
+}
+
+.btn-print:hover {
+    background: linear-gradient(135deg, #59359a 0%, #472a7a 100%);
+    color: white;
+}
+
+/* PDF Download button */
+.btn-pdf {
+    background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    color: white;
+    border: none;
+}
+
+.btn-pdf:hover {
+    background: linear-gradient(135deg, #bb2d3b 0%, #a52834 100%);
+    color: white;
+}
+
+/* Quick action buttons */
+.quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+}
+
+.custom-toast {
+    background: white;
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.custom-toast.success { border-right: 4px solid #198754; }
+.custom-toast.error { border-right: 4px solid #dc3545; }
+.custom-toast.warning { border-right: 4px solid #ffc107; }
+.custom-toast.info { border-right: 4px solid #0dcaf0; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .theme-toggle {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+}

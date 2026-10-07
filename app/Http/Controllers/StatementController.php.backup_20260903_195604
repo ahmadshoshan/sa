@@ -1,0 +1,354 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Customer;
+use App\Models\Supplier;
+use App\Models\Invoice;
+use App\Models\Payment;
+use Illuminate\Http\Request;
+
+class StatementController extends Controller
+{
+    public function index(Request $request)
+    {
+        $tab = $request->input('tab', 'customers');
+
+        $customers = Customer::orderBy('name')->get()
+            ->map(function ($c) {
+                $c->sales_total = (float) Invoice::where('customer_id', $c->id)->where('type', 'sale')->sum('total');
+                $c->returns_total = (float) Invoice::where('customer_id', $c->id)->where('type', 'sale_return')->sum('total');
+                $c->payments_total = (float) Payment::where('customer_id', $c->id)->where('type', 'receipt')->sum('amount');
+                return $c;
+            });
+
+        $suppliers = Supplier::orderBy('name')->get()
+            ->map(function ($s) {
+                $s->purchases_total = (float) Invoice::where('supplier_id', $s->id)->where('type', 'purchase')->sum('total');
+                $s->returns_total = (float) Invoice::where('supplier_id', $s->id)->where('type', 'purchase_return')->sum('total');
+                $s->payments_total = (float) Payment::where('supplier_id', $s->id)->where('type', 'payment')->sum('amount');
+                return $s;
+            });
+
+        return view('statements.index', compact('customers', 'suppliers', 'tab'));
+    }
+
+        public function customerStatement(Customer $customer, Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+        
+        // جلب الفواتير (بيع + مرتجعات بيع)
+        $invoicesQuery = Invoice::where('customer_id', $customer->id)
+            ->whereIn('type', ['sale', 'sale_return']);
+        
+        // جلب السندات (قبض من العميل + دفع للعميل = كل السندات الخاصة بالعميل)
+        $paymentsQuery = Payment::where('customer_id', $customer->id)
+            ->whereIn('type', ['receipt', 'payment']);
+        
+        if ($from) {
+            $invoicesQuery->whereDate('invoice_date', '>=', $from);
+            $paymentsQuery->whereDate('payment_date', '>=', $from);
+        }
+        if ($to) {
+            $invoicesQuery->whereDate('invoice_date', '<=', $to);
+            $paymentsQuery->whereDate('payment_date', '<=', $to);
+        }
+        
+        $invoices = $invoicesQuery->orderBy('invoice_date', 'asc')->orderBy('id', 'asc')->get();
+        $payments = $paymentsQuery->orderBy('payment_date', 'asc')->orderBy('id', 'asc')->get();
+        
+        // حساب الرصيد التشغيلي
+        $runningBalance = (float) ($customer->opening_balance ?? 0);
+        
+        $transactions = collect();
+        
+        // إضافة الفواتير
+        foreach ($invoices as $inv) {
+            $amount = (float) $inv->total;
+            $isReturn = $inv->type === 'sale_return';
+            
+            if ($isReturn) {
+                // المرتجع: العميل يصبح دائن لنا (الرصيد ينقص)
+                $runningBalance -= $amount;
+            } else {
+                // الفاتورة: العميل مدين لنا (الرصيد يزيد)
+                $runningBalance += $amount;
+            }
+            
+            $transactions->push([
+                'date' => $inv->invoice_date . ' 00:00',
+                'sort_key' => $inv->invoice_date . '_0_' . $inv->id,
+                'type' => $isReturn ? 'مرتجع بيع' : 'فاتورة بيع',
+                'reference' => $inv->invoice_no,
+                'debit' => $isReturn ? 0 : $amount,
+                'credit' => $isReturn ? $amount : 0,
+                'balance' => $runningBalance,
+                'icon' => $isReturn ? '↩️' : '🧾',
+                'class' => $isReturn ? 'text-warning' : 'text-primary',
+            ]);
+        }
+        
+        // إضافة السندات
+        foreach ($payments as $pay) {
+            $amount = (float) $pay->amount;
+            $isReceipt = $pay->type === 'receipt';
+            
+            if ($isReceipt) {
+                // سند قبض من العميل: دفع لنا (الرصيد ينقص)
+                $runningBalance -= $amount;
+            } else {
+                // سند صرف للعميل: نحن دفعنا له (الرصيد يزيد - لأنه كان سالب)
+                $runningBalance += $amount;
+            }
+            
+            $transactions->push([
+                'date' => $pay->payment_date . ' 00:00',
+                'sort_key' => $pay->payment_date . '_1_' . $pay->id,
+                'type' => $isReceipt ? 'سند قبض من العميل' : 'سند صرف للعميل (رد مستحقات)',
+                'reference' => $pay->payment_no,
+                'debit' => $isReceipt ? 0 : $amount,
+                'credit' => $isReceipt ? $amount : 0,
+                'balance' => $runningBalance,
+                'icon' => $isReceipt ? '💵' : '💳',
+                'class' => $isReceipt ? 'text-success' : 'text-danger',
+                'method' => $pay->payment_method,
+                'notes' => $pay->notes,
+            ]);
+        }
+        
+        // ترتيب حسب التاريخ
+        $transactions = $transactions->sortBy('sort_key')->values();
+        
+        // الإحصائيات
+        $totalDebit = $transactions->sum('debit');
+        $totalCredit = $transactions->sum('credit');
+        
+        return view('statements.customer', compact(
+            'customer', 'transactions', 'from', 'to', 'totalDebit', 'totalCredit'
+        ));
+    }));
+
+        $totals = [
+            'debit' => array_sum(array_column($display, 'debit')),
+            'credit' => array_sum(array_column($display, 'credit')),
+            'balance' => $running,
+        ];
+
+        return view('statements.customer_statement', compact('customer', 'display', 'totals', 'from', 'to'));
+    }
+
+        public function supplierStatement(Supplier $supplier, Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+        
+        // جلب الفواتير (شراء + مرتجعات شراء)
+        $invoicesQuery = Invoice::where('supplier_id', $supplier->id)
+            ->whereIn('type', ['purchase', 'purchase_return']);
+        
+        // جلب السندات (دفع للمورد + قبض من المورد)
+        $paymentsQuery = Payment::where('supplier_id', $supplier->id)
+            ->whereIn('type', ['payment', 'receipt']);
+        
+        if ($from) {
+            $invoicesQuery->whereDate('invoice_date', '>=', $from);
+            $paymentsQuery->whereDate('payment_date', '>=', $from);
+        }
+        if ($to) {
+            $invoicesQuery->whereDate('invoice_date', '<=', $to);
+            $paymentsQuery->whereDate('payment_date', '<=', $to);
+        }
+        
+        $invoices = $invoicesQuery->orderBy('invoice_date', 'asc')->orderBy('id', 'asc')->get();
+        $payments = $paymentsQuery->orderBy('payment_date', 'asc')->orderBy('id', 'asc')->get();
+        
+        $runningBalance = (float) ($supplier->opening_balance ?? 0);
+        $transactions = collect();
+        
+        // الفواتير
+        foreach ($invoices as $inv) {
+            $amount = (float) $inv->total;
+            $isReturn = $inv->type === 'purchase_return';
+            
+            if ($isReturn) {
+                // المرتجع: المورد يصبح دائن لنا (الرصيد ينقص)
+                $runningBalance -= $amount;
+            } else {
+                // الفاتورة: نحن مدينون للمورد (الرصيد يزيد)
+                $runningBalance += $amount;
+            }
+            
+            $transactions->push([
+                'date' => $inv->invoice_date . ' 00:00',
+                'sort_key' => $inv->invoice_date . '_0_' . $inv->id,
+                'type' => $isReturn ? 'مرتجع شراء' : 'فاتورة شراء',
+                'reference' => $inv->invoice_no,
+                'debit' => $isReturn ? $amount : 0,
+                'credit' => $isReturn ? 0 : $amount,
+                'balance' => $runningBalance,
+                'icon' => $isReturn ? '↪️' : '🛒',
+                'class' => $isReturn ? 'text-warning' : 'text-primary',
+            ]);
+        }
+        
+        // السندات
+        foreach ($payments as $pay) {
+            $amount = (float) $pay->amount;
+            $isPayment = $pay->type === 'payment';
+            
+            if ($isPayment) {
+                // سند صرف للمورد: دفعنا له (الرصيد ينقص)
+                $runningBalance -= $amount;
+            } else {
+                // سند قبض من المورد: استلمنا منه (الرصيد يزيد)
+                $runningBalance += $amount;
+            }
+            
+            $transactions->push([
+                'date' => $pay->payment_date . ' 00:00',
+                'sort_key' => $pay->payment_date . '_1_' . $pay->id,
+                'type' => $isPayment ? 'سند صرف (دفع للمورد)' : 'سند قبض (من المورد)',
+                'reference' => $pay->payment_no,
+                'debit' => $isPayment ? $amount : 0,
+                'credit' => $isPayment ? 0 : $amount,
+                'balance' => $runningBalance,
+                'icon' => $isPayment ? '💸' : '💰',
+                'class' => $isPayment ? 'text-success' : 'text-danger',
+                'method' => $pay->payment_method,
+                'notes' => $pay->notes,
+            ]);
+        }
+        
+        $transactions = $transactions->sortBy('sort_key')->values();
+        $totalDebit = $transactions->sum('debit');
+        $totalCredit = $transactions->sum('credit');
+        
+        return view('statements.supplier', compact(
+            'supplier', 'transactions', 'from', 'to', 'totalDebit', 'totalCredit'
+        ));
+    }));
+
+        $totals = [
+            'debit' => array_sum(array_column($display, 'debit')),
+            'credit' => array_sum(array_column($display, 'credit')),
+            'balance' => $running,
+        ];
+
+        return view('statements.supplier_statement', compact('supplier', 'display', 'totals', 'from', 'to'));
+    }
+
+    protected function buildCustomerTransactions(Customer $customer): array
+    {
+        $transactions = [];
+
+        if ((float) $customer->opening_balance != 0) {
+            $transactions[] = [
+                'date' => $customer->created_at?->toDateString() ?? now()->toDateString(),
+                'type' => 'opening',
+                'label' => 'رصيد افتتاحي',
+                'ref' => '-',
+                'debit' => (float) $customer->opening_balance,
+                'credit' => 0,
+            ];
+        }
+
+        $invoices = Invoice::where('customer_id', $customer->id)
+            ->whereIn('type', ['sale', 'sale_return'])
+            ->orderBy('invoice_date')->orderBy('id')->get();
+
+        foreach ($invoices as $inv) {
+            $isSale = $inv->type === 'sale';
+            $transactions[] = [
+                'date' => $inv->invoice_date->toDateString(),
+                'type' => $inv->type,
+                'label' => $isSale ? 'فاتورة بيع' : 'مرتجع بيع',
+                'ref' => $inv->invoice_no,
+                'debit' => $isSale ? (float) $inv->total : 0,
+                'credit' => $isSale ? 0 : (float) $inv->total,
+            ];
+        }
+
+        $payments = Payment::where('customer_id', $customer->id)
+            ->where('type', 'receipt')
+            ->orderBy('payment_date')->orderBy('id')->get();
+
+        foreach ($payments as $pay) {
+            $transactions[] = [
+                'date' => $pay->payment_date->toDateString(),
+                'type' => 'receipt',
+                'label' => 'سند قبض (' . $this->paymentMethodLabel($pay->payment_method) . ')',
+                'ref' => $pay->payment_no,
+                'debit' => 0,
+                'credit' => (float) $pay->amount,
+            ];
+        }
+
+        usort($transactions, fn($a, $b) => strcmp($a['date'], $b['date']));
+
+        return $transactions;
+    }
+
+    protected function buildSupplierTransactions(Supplier $supplier): array
+    {
+        $transactions = [];
+
+        if ((float) $supplier->opening_balance != 0) {
+            $transactions[] = [
+                'date' => $supplier->created_at?->toDateString() ?? now()->toDateString(),
+                'type' => 'opening',
+                'label' => 'رصيد افتتاحي',
+                'ref' => '-',
+                'debit' => 0,
+                'credit' => (float) $supplier->opening_balance,
+            ];
+        }
+
+        $invoices = Invoice::where('supplier_id', $supplier->id)
+            ->whereIn('type', ['purchase', 'purchase_return'])
+            ->orderBy('invoice_date')->orderBy('id')->get();
+
+        foreach ($invoices as $inv) {
+            $isPurchase = $inv->type === 'purchase';
+            $transactions[] = [
+                'date' => $inv->invoice_date->toDateString(),
+                'type' => $inv->type,
+                'label' => $isPurchase ? 'فاتورة شراء' : 'مرتجع شراء',
+                'ref' => $inv->invoice_no,
+                'debit' => $isPurchase ? 0 : (float) $inv->total,
+                'credit' => $isPurchase ? (float) $inv->total : 0,
+            ];
+        }
+
+        $payments = Payment::where('supplier_id', $supplier->id)
+            ->where('type', 'payment')
+            ->orderBy('payment_date')->orderBy('id')->get();
+
+        foreach ($payments as $pay) {
+            $transactions[] = [
+                'date' => $pay->payment_date->toDateString(),
+                'type' => 'payment',
+                'label' => 'سند صرف (' . $this->paymentMethodLabel($pay->payment_method) . ')',
+                'ref' => $pay->payment_no,
+                'debit' => (float) $pay->amount,
+                'credit' => 0,
+            ];
+        }
+
+        usort($transactions, fn($a, $b) => strcmp($a['date'], $b['date']));
+
+        return $transactions;
+    }
+
+    protected function paymentMethodLabel(string $method): string
+    {
+        return match ($method) {
+            'cash' => 'نقدي',
+            'card' => 'بطاقة',
+            'bank_transfer' => 'تحويل بنكي',
+            'cheque' => 'شيك',
+            'credit' => 'آجل',
+            default => $method,
+        };
+    }
+}
