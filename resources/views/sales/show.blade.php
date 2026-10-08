@@ -10,7 +10,7 @@
 
             <div class="d-flex gap-2 flex-wrap">
 
-                @if((float) $invoice->remaining_amount > 0)
+                @if ((float) $invoice->remaining_amount > 0)
                     <a href="{{ route('sales.installments', $invoice) }}" class="btn btn-outline-success btn-sm">
                         💳 التقسيط
                     </a>
@@ -30,7 +30,7 @@
 
                 <a href="{{ route('sales.index') }}" class="btn btn-secondary btn-sm">
                     رجوع
-                </a>                 <a href="{{ route('pdf.invoice', $invoice->id) }}" target="_blank" class="btn btn-pdf">
+                </a> <a href="{{ route('pdf.invoice', $invoice->id) }}" target="_blank" class="btn btn-pdf">
                     📄 طباعة PDF
                 </a>
             </div>
@@ -61,7 +61,7 @@
                 <div class="col-md-2">
                     <strong>الحالة:</strong><br>
 
-                    @if($invoice->status === 'posted')
+                    @if ($invoice->status === 'posted')
                         <span class="badge bg-success">مرحّلة</span>
                     @elseif($invoice->status === 'draft')
                         <span class="badge bg-warning">مسودة</span>
@@ -94,7 +94,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach($invoice->items as $item)
+                        @foreach ($invoice->items as $item)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->product?->name }}</td>
@@ -121,12 +121,31 @@
                         <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
                             <span>{{ $payment->payment_no }}</span>
                             <span>{{ number_format((float) $payment->amount, 2) }}</span>
-                            <span>{{ $payment->payment_method }}</span>
+                            <span>{{ $payment->payment_date?->format('Y-m-d') }}</span>
                         </div>
                     @empty
                         <p class="text-center mb-0">لا توجد دفعات على هذه الفاتورة.</p>
                     @endforelse
                 </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">المرتجعات</div>
+        
+                @forelse($invoice->returns as $return)
+                
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>{{ $return->invoice_no }}</span>
+                        <span>{{ number_format((float) $return->total, 2) }}</span>
+                        <span>{{ $return->invoice_date?->format('Y-m-d') }}</span>
+                    </div>
+                @empty
+                    <p class="text-center mb-0">لا توجد مرتجعات على هذه الفاتورة.</p>
+                @endforelse
+                 
+               
+
             </div>
         </div>
 

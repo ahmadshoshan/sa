@@ -12,7 +12,7 @@ class BackupController extends Controller
     {
         $directory = storage_path('app/backups');
 
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             mkdir($directory, 0777, true);
         }
 
@@ -33,7 +33,12 @@ class BackupController extends Controller
     public function run()
     {
         try {
-            Artisan::call('backup:run');
+            $exitCode = Artisan::call('backup:run');
+
+            if ($exitCode !== 0) {
+                $output = trim(Artisan::output());
+                throw new \RuntimeException($output !== '' ? $output : 'تعذر إنشاء ملف النسخة الاحتياطية.');
+            }
 
             return redirect()
                 ->route('backups.index')
@@ -41,16 +46,16 @@ class BackupController extends Controller
         } catch (Throwable $e) {
             return redirect()
                 ->route('backups.index')
-                ->with('error', 'فشل إنشاء النسخة الاحتياطية: ' . $e->getMessage());
+                ->with('error', 'فشل إنشاء النسخة الاحتياطية: '.$e->getMessage());
         }
     }
 
     public function download($file)
     {
         $file = basename($file);
-        $path = storage_path('app/backups/' . $file);
+        $path = storage_path('app/backups/'.$file);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             abort(404);
         }
 
@@ -60,7 +65,7 @@ class BackupController extends Controller
     public function destroy($file)
     {
         $file = basename($file);
-        $path = storage_path('app/backups/' . $file);
+        $path = storage_path('app/backups/'.$file);
 
         if (file_exists($path)) {
             unlink($path);

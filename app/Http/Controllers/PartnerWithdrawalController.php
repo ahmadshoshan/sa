@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Partner;
+use App\Models\PartnerWithdrawal;
 use App\Services\PartnerWithdrawalService;
 use Illuminate\Http\Request;
 use Throwable;
@@ -19,7 +20,7 @@ class PartnerWithdrawalController extends Controller
         // حماية من التكرار
         $idempotencyKey = $request->input('_idempotency_key');
         if ($idempotencyKey) {
-            $existing = \App\Models\PartnerWithdrawal::findByIdempotencyKey($idempotencyKey);
+            $existing = PartnerWithdrawal::findByIdempotencyKey($idempotencyKey);
             if ($existing) {
                 return redirect()->route('partners.show', $partner)
                     ->with('warning', 'تم حفظ هذه العملية مسبقاً. لم يتم تكرارها.');
@@ -27,8 +28,8 @@ class PartnerWithdrawalController extends Controller
         }
 
         // توليد مفتاح جديد إن لم يوجد
-        if (!$idempotencyKey) {
-            $idempotencyKey = \App\Models\PartnerWithdrawal::generateIdempotencyKey();
+        if (! $idempotencyKey) {
+            $idempotencyKey = PartnerWithdrawal::generateIdempotencyKey();
         }
 
         $validated = $request->validate([
@@ -37,6 +38,7 @@ class PartnerWithdrawalController extends Controller
             'payment_method' => ['required', 'in:cash,card,bank_transfer,cheque'],
             'notes' => ['nullable', 'string'],
         ]);
+        $validated['idempotency_key'] = $idempotencyKey;
 
         try {
             $service->addWithdrawal($partner, $validated);

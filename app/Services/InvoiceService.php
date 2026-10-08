@@ -124,7 +124,7 @@ class InvoiceService
                 'remaining_amount' => $remainingAmount,
             ]);
 
-            // $customer->current_balance = (float) $customer->current_balance + $grandTotal;
+            $customer->current_balance = (float) $customer->current_balance + $grandTotal;
 
             if ($paidAmount > 0) {
                 Payment::create([
@@ -388,7 +388,7 @@ class InvoiceService
             ]);
 
             // مرتجع البيع يقلل رصيد العميل المستحق
-            // $customer->current_balance = (float) $customer->current_balance - $grandTotal;
+            $customer->current_balance = (float) $customer->current_balance - $grandTotal;
 
             // إذا تم رد مبلغ نقدًا أو بأي طريقة، نسجل حركة دفع للعميل
             if ($refundAmount > 0) {

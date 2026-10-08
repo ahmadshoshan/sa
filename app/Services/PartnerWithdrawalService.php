@@ -31,7 +31,8 @@ class PartnerWithdrawalService
                 'amount' => $amount,
                 'payment_method' => $data['payment_method'],
                 'notes' => $data['notes'] ?? null,
-                'user_id' =>  Auth::id(),
+                'user_id' => Auth::id(),
+                'idempotency_key' => $data['idempotency_key'] ?? null,
             ]);
 
             $payment = Payment::create([
@@ -46,8 +47,8 @@ class PartnerWithdrawalService
                 'amount' => $amount,
                 'payment_method' => $data['payment_method'],
                 'payment_date' => $data['withdrawal_date'],
-                'notes' => 'مسحوبات الشريك ' . $partner->name,
-                'user_id' =>  Auth::id(),
+                'notes' => 'مسحوبات الشريك '.$partner->name,
+                'user_id' => Auth::id(),
             ]);
 
             $withdrawal->payment_id = $payment->id;
@@ -62,6 +63,6 @@ class PartnerWithdrawalService
         $prefix = $type === 'receipt' ? 'REC' : 'PAY';
         $lastId = Payment::max('id') + 1;
 
-        return $prefix . '-' . now()->format('Ymd') . '-' . str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
+        return $prefix.'-'.now()->format('Ymd').'-'.str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
     }
 }

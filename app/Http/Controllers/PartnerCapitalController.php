@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Partner;
+use App\Models\PartnerCapital;
 use App\Services\PartnerCapitalService;
 use Illuminate\Http\Request;
 use Throwable;
@@ -19,15 +20,15 @@ class PartnerCapitalController extends Controller
         // حماية من التكرار
         $idempotencyKey = $request->input('_idempotency_key');
         if ($idempotencyKey) {
-            $existing = \App\Models\PartnerCapital::findByIdempotencyKey($idempotencyKey);
+            $existing = PartnerCapital::findByIdempotencyKey($idempotencyKey);
             if ($existing) {
                 return redirect()->back()
                     ->with('warning', 'تم حفظ هذه العملية مسبقاً. لم يتم تكرارها.');
             }
         }
 
-        if (!$idempotencyKey) {
-            $idempotencyKey = \App\Models\PartnerCapital::generateIdempotencyKey();
+        if (! $idempotencyKey) {
+            $idempotencyKey = PartnerCapital::generateIdempotencyKey();
         }
 
         $validated = $request->validate([
@@ -37,6 +38,7 @@ class PartnerCapitalController extends Controller
             'payment_method' => ['nullable', 'in:cash,card,bank_transfer,cheque,credit'],
             'description' => ['nullable', 'string'],
         ]);
+        $validated['idempotency_key'] = $idempotencyKey;
 
         try {
             $service->addCapital($partner, $validated);

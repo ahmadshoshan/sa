@@ -38,13 +38,14 @@ class PaymentService
                 'payment_method' => $data['payment_method'],
                 'payment_date' => $data['payment_date'],
                 'notes' => $data['notes'] ?? 'لا يوجد',
-                'user_id' =>  Auth::id(),
+                'user_id' => Auth::id(),
+                'idempotency_key' => $data['idempotency_key'] ?? null,
             ]);
 
-            if (!empty($data['customer_id'])) {
+            if (! empty($data['customer_id'])) {
                 $customer = Customer::lockForUpdate()->find($data['customer_id']);
 
-                if (!$customer) {
+                if (! $customer) {
                     throw new Exception('العميل غير موجود.');
                 }
 
@@ -57,10 +58,10 @@ class PaymentService
                 $customer->save();
             }
 
-            if (!empty($data['supplier_id'])) {
+            if (! empty($data['supplier_id'])) {
                 $supplier = Supplier::lockForUpdate()->find($data['supplier_id']);
 
-                if (!$supplier) {
+                if (! $supplier) {
                     throw new Exception('المورد غير موجود.');
                 }
 
@@ -81,7 +82,7 @@ class PaymentService
     {
         $invoice = Invoice::find($invoiceId);
 
-        if (!$invoice) {
+        if (! $invoice) {
             return;
         }
 
@@ -98,7 +99,7 @@ class PaymentService
     {
         $expense = Expense::find($expenseId);
 
-        if (!$expense) {
+        if (! $expense) {
             return;
         }
 
@@ -124,7 +125,7 @@ class PaymentService
     {
         $item = PartnerDistributionItem::find($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return;
         }
 
@@ -151,6 +152,6 @@ class PaymentService
         $prefix = $type === 'receipt' ? 'REC' : 'PAY';
         $lastId = Payment::max('id') + 1;
 
-        return $prefix . '-' . now()->format('Ymd') . '-' . str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
+        return $prefix.'-'.now()->format('Ymd').'-'.str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
     }
 }

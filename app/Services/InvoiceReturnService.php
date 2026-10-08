@@ -123,7 +123,7 @@ class InvoiceReturnService
                 'customer_id' => $originalInvoice->customer_id,
                 'supplier_id' => $originalInvoice->supplier_id,
                 'warehouse_id' => $originalInvoice->warehouse_id,
-                'parent_invoice_id' => $originalInvoice->id,
+                'original_invoice_id' => $originalInvoice->id,
                 'invoice_date' => now()->format('Y-m-d'),
                 'subtotal' => $returnSubtotal,
                 'discount' => 0,
@@ -132,8 +132,6 @@ class InvoiceReturnService
                 'paid_amount' => $returnTotal, // المرتجع يعتبر "مدفوع" بالكامل (تمت المعالجة)
                 'remaining_amount' => 0,
                 'status' => 'posted',
-                'settlement_method' => $data['settlement_method'] ?? 'carry_forward',
-                'settlement_account_id' => $data['account_id'] ?? null,
                 'notes' => ($data['notes'] ?? '') . "\nمرتجع من الفاتورة الأصلية: {$originalInvoice->invoice_no}",
                 'user_id' =>  Auth::id(),
             ]);
@@ -179,7 +177,7 @@ class InvoiceReturnService
         if (!$originalInvoice) return 0;
 
         // البحث عن مرتجعات مرتبطة بالفاتورة الأصلية
-        $returnInvoices = Invoice::where('parent_invoice_id', $originalInvoice->id)
+        $returnInvoices = Invoice::where('original_invoice_id', $originalInvoice->id)
             ->whereIn('type', ['sale_return', 'purchase_return'])
             ->pluck('id');
 

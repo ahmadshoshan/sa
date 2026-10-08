@@ -69,10 +69,9 @@
                         <label class="form-label">طريقة الدفع</label>
                         <select name="payment_method" class="form-select" required>
                             <option value="cash" @selected(old('payment_method') == 'cash')>نقدي</option>
-                            <option value="card" @selected(old('payment_method') == 'card')>بطاقة</option>
+                            <option value="card" @selected(old('payment_method') == 'card')> انستا/كاش انستا/كاش</option>
                             <option value="bank_transfer" @selected(old('payment_method') == 'bank_transfer')>تحويل بنكي</option>
-                            <option value="cheque" @selected(old('payment_method') == 'cheque')>شيك</option>
-                        </select>
+\                        </select>
                     </div>
 
                     <div class="col-md-3 mb-3">

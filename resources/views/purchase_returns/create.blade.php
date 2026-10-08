@@ -207,10 +207,8 @@
                         <label class="form-label">طريقة استلام المبلغ</label>
                         <select name="payment_method" class="form-select">
                             <option value="cash" @selected(old('payment_method', 'cash') == 'cash')>نقدي</option>
-                            <option value="card" @selected(old('payment_method') == 'card')>بطاقة</option>
+                            <option value="card" @selected(old('payment_method') == 'card')> انستا/كاش</option>
                             <option value="bank_transfer" @selected(old('payment_method') == 'bank_transfer')>تحويل بنكي</option>
-                            <option value="cheque" @selected(old('payment_method') == 'cheque')>شيك</option>
-                            <option value="credit" @selected(old('payment_method') == 'credit')>خصم من الرصيد</option>
                         </select>
                     </div>
 

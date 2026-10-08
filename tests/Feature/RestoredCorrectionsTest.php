@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Invoice;
 use App\Models\Partner;
+use App\Models\PartnerCapital;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\Supplier;
@@ -214,5 +215,44 @@ class RestoredCorrectionsTest extends TestCase
         $this->assertSame('12.5000', $partner->profit_share);
         $this->assertSame('7.2500', $partner->capital_share);
         $this->assertTrue($partner->is_active);
+    }
+
+    public function test_partner_capital_submission_saves_idempotency_key_and_ignores_retries(): void
+    {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $user = User::factory()->create();
+        $user->givePermissionTo(Permission::findOrCreate('partners.manage', 'web'));
+        $user->givePermissionTo(Permission::findOrCreate('capital.manage', 'web'));
+        $this->actingAs($user);
+
+        $partner = Partner::create([
+            'code' => 'CAPITAL-TEST',
+            'name' => 'Capital test partner',
+            'is_active' => true,
+        ]);
+
+        $payload = [
+            '_idempotency_key' => 'test-partner-capital-key',
+            'contribution_date' => now()->toDateString(),
+            'contribution_type' => 'cash',
+            'amount' => 125.50,
+            'payment_method' => 'credit',
+        ];
+
+        $this->post(route('partners.capitals.store', $partner), $payload)
+            ->assertRedirect(route('partners.show', $partner));
+
+        $this->assertDatabaseHas('partner_capitals', [
+            'partner_id' => $partner->id,
+            'idempotency_key' => $payload['_idempotency_key'],
+            'amount' => 125.50,
+            'status' => 'pending',
+        ]);
+
+        $this->post(route('partners.capitals.store', $partner), $payload)
+            ->assertSessionHas('warning');
+
+        $this->assertSame(1, PartnerCapital::where('idempotency_key', $payload['_idempotency_key'])->count());
     }
 }

@@ -103,6 +103,25 @@
                 </div>
             </div>
         </div>
+<div class="col-md-6">
+            <div class="card">
+                <div class="card-header">المرتجعات</div>
+        
+                @forelse($invoice->returns as $return)
+                
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>{{ $return->invoice_no }}</span>
+                        <span>{{ number_format((float) $return->total, 2) }}</span>
+                        <span>{{ $return->invoice_date?->format('Y-m-d') }}</span>
+                    </div>
+                @empty
+                    <p class="text-center mb-0">لا توجد مرتجعات على هذه الفاتورة.</p>
+                @endforelse
+                 
+               
+
+            </div>
+        </div>
 
         <div class="col-md-6">
             <div class="card bg-light">

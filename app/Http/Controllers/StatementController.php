@@ -346,8 +346,7 @@ class StatementController extends Controller
             'cash' => 'نقدي',
             'card' => 'بطاقة',
             'bank_transfer' => 'تحويل بنكي',
-            'cheque' => 'شيك',
-            'credit' => 'آجل',
+          
             default => $method,
         };
     }

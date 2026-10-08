@@ -32,13 +32,11 @@
 
                 <tbody>
                     @forelse($invoices as $invoice)
-                        <tr
-                         @if($invoice->status === 'returned')
-                           style="mix-blend-mode: difference;"     
-                              @endif
-                      >
-                            <td >{{ $invoice->id }}</td>
+                        <tr @if ($invoice->status === 'returned') style="mix-blend-mode: difference;" @endif>
+                            <td>{{ $invoice->id }}</td>
                             <td>{{ $invoice->invoice_no }}</td>
+                            {{-- <td>{{ $invoice->invoice_no }}<br>{{ $invoice->returns->count() }}</td> --}}
+
                             <td>{{ $invoice->invoice_date?->format('Y-m-d') }}</td>
                             <td>{{ $invoice->customer?->name }}</td>
                             <td>{{ number_format((float) $invoice->total, 2) }}</td>
@@ -46,29 +44,36 @@
                             <td>{{ number_format((float) $invoice->remaining_amount, 2) }}</td>
 
                             <td>
-                                @if($invoice->status === 'posted')
+                                @if ($invoice->status === 'posted')
                                     <span class="badge bg-success">مرحّلة</span>
                                 @elseif($invoice->status === 'draft')
                                     <span class="badge bg-warning">مسودة</span>
                                 @elseif($invoice->status === 'cancelled')
                                     <span class="badge bg-danger">ملغاة</span>
                                 @elseif($invoice->status === 'returned')
-                                    <span class="badge bg-danger">مرتجع</span>
+                                    {{-- <span class="badge bg-danger">مرتجع</span> --}}
                                 @else
                                     {{-- <span class="badge bg-secondary">{{ $invoice->status }}</span> --}}
                                 @endif
+                                @if ($invoice->returns && $invoice->returns->count() > 0)
+                                  
+                                    <span class="badge bg-danger">مرتجع</span>
+                                   
+                                    <span class="badge bg-danger">{{ $invoice->returns->count() }}</span>
+                                @endif
+
                             </td>
 
                             <td>
                                 <a href="{{ route('sales.show', $invoice) }}" class="btn btn-sm btn-info">
                                     عرض
-                                </a> 
-                                 @if($invoice->status !== 'returned')
-                              
-                                 <a href="{{ route('returns.create-from-invoice', $invoice->id) }}" class="btn btn-sm btn-warning" title="إرتجاع الفاتورة">
-                                     🔄 إرتجاع
+                                </a>
+                                @if ($invoice->status !== 'returned')
+                                    <a href="{{ route('returns.create-from-invoice', $invoice->id) }}"
+                                        class="btn btn-sm btn-warning" title="إرتجاع الفاتورة">
+                                        🔄 إرتجاع
                                     </a>
-                                    @endif
+                                @endif
 
                             </td>
                         </tr>

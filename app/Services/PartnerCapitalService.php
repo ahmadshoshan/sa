@@ -35,7 +35,8 @@ class PartnerCapitalService
                 'payment_method' => $data['payment_method'] ?? null,
                 'status' => $isCashCredit ? 'pending' : 'paid',
                 'description' => $data['description'] ?? null,
-                'user_id' =>  Auth::id(),
+                'user_id' => Auth::id(),
+                'idempotency_key' => $data['idempotency_key'] ?? null,
             ]);
 
             if ($capital->status === 'pending') {
@@ -55,8 +56,8 @@ class PartnerCapitalService
                     'amount' => $amount,
                     'payment_method' => $data['payment_method'] ?? 'cash',
                     'payment_date' => $data['contribution_date'],
-                    'notes' => 'مساهمة رأس مال من الشريك ' . $partner->name,
-                    'user_id' =>  Auth::id(),
+                    'notes' => 'مساهمة رأس مال من الشريك '.$partner->name,
+                    'user_id' => Auth::id(),
                 ]);
             } else {
                 $debitAccountCode = $data['contribution_type'] === 'inventory' ? '1201' : '1501';
@@ -68,7 +69,7 @@ class PartnerCapitalService
 
                 $this->journal->createJournal(
                     $capital->contribution_date,
-                    'مساهمة رأس مال عينية من الشريك ' . $partner->name,
+                    'مساهمة رأس مال عينية من الشريك '.$partner->name,
                     'partner_capital',
                     $capital->id,
                     $lines
@@ -84,6 +85,6 @@ class PartnerCapitalService
         $prefix = $type === 'receipt' ? 'REC' : 'PAY';
         $lastId = Payment::max('id') + 1;
 
-        return $prefix . '-' . now()->format('Ymd') . '-' . str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
+        return $prefix.'-'.now()->format('Ymd').'-'.str_pad((string) $lastId, 6, '0', STR_PAD_LEFT);
     }
 }

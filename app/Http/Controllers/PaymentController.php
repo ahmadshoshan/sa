@@ -33,15 +33,15 @@ class PaymentController extends Controller
         // حماية من التكرار
         $idempotencyKey = $request->input('_idempotency_key');
         if ($idempotencyKey) {
-            $existing = \App\Models\Payment::findByIdempotencyKey($idempotencyKey);
+            $existing = Payment::findByIdempotencyKey($idempotencyKey);
             if ($existing) {
                 return redirect()->back()
                     ->with('warning', 'تم حفظ هذه العملية مسبقاً. لم يتم تكرارها.');
             }
         }
 
-        if (!$idempotencyKey) {
-            $idempotencyKey = \App\Models\Payment::generateIdempotencyKey();
+        if (! $idempotencyKey) {
+            $idempotencyKey = Payment::generateIdempotencyKey();
         }
 
         $validated = $request->validate([
@@ -53,8 +53,9 @@ class PaymentController extends Controller
             'payment_date' => ['required', 'date'],
             'notes' => ['nullable', 'string'],
         ]);
+        $validated['idempotency_key'] = $idempotencyKey;
 
-        if (!empty($validated['customer_id']) && !empty($validated['supplier_id'])) {
+        if (! empty($validated['customer_id']) && ! empty($validated['supplier_id'])) {
             return redirect()->back()->withInput()->with('error', 'يجب اختيار طرف واحد فقط: عميل أو مورد.');
         }
 

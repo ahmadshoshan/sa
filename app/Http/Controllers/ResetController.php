@@ -17,7 +17,7 @@ class ResetController extends Controller
 
     public function confirm(string $type)
     {
-        if (!in_array($type, ['transactions', 'all', 'factory'])) {
+        if (! in_array($type, ['transactions', 'all', 'factory'])) {
             abort(404);
         }
 
@@ -42,7 +42,7 @@ class ResetController extends Controller
 
     public function execute(Request $request, string $type, ResetService $resetService)
     {
-        if (!in_array($type, ['transactions', 'all', 'factory'])) {
+        if (! in_array($type, ['transactions', 'all', 'factory'])) {
             abort(404);
         }
 
@@ -51,16 +51,18 @@ class ResetController extends Controller
             'confirm' => ['required', 'accepted'],
         ]);
 
-        if (!Hash::check($request->password, auth()->user()->password)) {
+        if (! Hash::check($request->password, auth()->user()->password)) {
             return redirect()->back()->with('error', 'كلمة المرور غير صحيحة.');
         }
 
         try {
-            // محاولة إنشاء نسخة احتياطية قبل التفريغ
-            try {
-                Artisan::call('backup:run');
-            } catch (Throwable $e) {
-                // لا نوقف التفريغ إذا فشل النسخ الاحتياطي
+            $backupExitCode = Artisan::call('backup:run');
+            if ($backupExitCode !== 0) {
+                $backupOutput = trim(Artisan::output());
+                throw new \RuntimeException(
+                    'أُوقف التفريغ لأن النسخ الاحتياطي لم ينجح. '.
+                    ($backupOutput !== '' ? $backupOutput : 'تحقق من إعدادات النسخ الاحتياطي ثم أعد المحاولة.')
+                );
             }
 
             match ($type) {
@@ -80,7 +82,7 @@ class ResetController extends Controller
 
             return redirect()->route('reset.index')->with('success', $messages[$type]);
         } catch (Throwable $e) {
-            return redirect()->back()->with('error', 'حدث خطأ أثناء التفريغ: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'حدث خطأ أثناء التفريغ: '.$e->getMessage());
         }
     }
 }

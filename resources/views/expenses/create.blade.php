@@ -70,10 +70,8 @@
                         <label class="form-label">طريقة الدفع</label>
                         <select name="payment_method" class="form-select" required>
                             <option value="cash" @selected(old('payment_method', 'cash') == 'cash')>نقدي</option>
-                            <option value="card" @selected(old('payment_method') == 'card')>بطاقة</option>
+                            <option value="card" @selected(old('payment_method') == 'card')>انستا/كاش</option>
                             <option value="bank_transfer" @selected(old('payment_method') == 'bank_transfer')>تحويل بنكي</option>
-                            <option value="cheque" @selected(old('payment_method') == 'cheque')>شيك</option>
-                            <option value="credit" @selected(old('payment_method') == 'credit')>آجل</option>
                         </select>
                     </div>
 
@@ -146,10 +144,8 @@
             <label class="form-label">طريقة الدفع <span class="text-danger">*</span></label>
             <select name="payment_method" class="form-select" required>
                 <option value="cash" @selected(old('payment_method', 'cash') == 'cash')>نقدي</option>
-                <option value="card" @selected(old('payment_method') == 'card')>بطاقة</option>
+                <option value="card" @selected(old('payment_method') == 'card')>انستا/كاش</option>
                 <option value="bank_transfer" @selected(old('payment_method') == 'bank_transfer')>تحويل بنكي</option>
-                <option value="cheque" @selected(old('payment_method') == 'cheque')>شيك</option>
-                <option value="credit" @selected(old('payment_method') == 'credit')>آجل</option>
             </select>
         </div>
 

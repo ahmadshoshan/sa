@@ -16,12 +16,14 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">الكود</label>
-                        <input type="text" name="code" value="{{ old('code') }}" class="form-control" required>
+                        <input type="text" value="{{ $identifiers['code'] }}" class="form-control" readonly>
+                        <small class="text-muted">يُنشأ الكود تلقائياً عند حفظ الصنف.</small>
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="form-label">الباركود</label>
-                        <input type="text" name="barcode" value="{{ old('barcode') }}" class="form-control">
+                        <input type="text" value="{{ $identifiers['barcode'] }}" class="form-control" readonly>
+                        <small class="text-muted">باركود EAN-13 يُنشأ تلقائياً عند الحفظ.</small>
                     </div>
 
                     <div class="col-md-6 mb-3">

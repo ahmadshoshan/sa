@@ -34,7 +34,7 @@
                     @forelse($invoices as $invoice)
                         <tr>
                             <td>{{ $invoice->id }}</td>
-                            <td>{{ $invoice->invoice_no }}</td>
+                            <td>{{ $invoice->invoice_no }}<br>{{ $invoice->notes }}</td>
                             <td>{{ $invoice->invoice_date?->format('Y-m-d') }}</td>
                             <td>{{ $invoice->customer?->name }}</td>
                             <td>{{ number_format((float) $invoice->total, 2) }}</td>

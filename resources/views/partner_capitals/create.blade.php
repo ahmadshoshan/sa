@@ -92,7 +92,7 @@
 
                             <option value="card"
                                 @selected(old('payment_method') == 'card')}>
-                                بطاقة
+                                انستا/كاش
                             </option>
 
                             <option value="bank_transfer"
@@ -100,15 +100,7 @@
                                 تحويل بنكي
                             </option>
 
-                            <option value="cheque"
-                                @selected(old('payment_method') == 'cheque')}>
-                                شيك
-                            </option>
-
-                            <option value="credit"
-                                @selected(old('payment_method') == 'credit')}>
-                                آجل / غير مدفوع
-                            </option>
+                          
 
                         </select>
                     </div>

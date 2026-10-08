@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\Unit;
 use App\Models\Warehouse;
-use App\Models\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -26,25 +27,30 @@ class ProductController extends Controller
     {
         $categories = Category::where('is_active', true)->orderBy('name')->get();
         $units = Unit::where('is_active', true)->orderBy('name')->get();
+        $identifiers = $this->generateProductIdentifiers();
 
-        return view('products.create', compact('categories', 'units'));
+        return view('products.create', compact('categories', 'units', 'identifiers'));
     }
 
     public function store(Request $request)
     {
+        $identifiers = $this->generateProductIdentifiers();
+        $request->merge($identifiers);
         $validated = $this->validateProduct($request);
 
         $validated['image'] = $this->storeImage($request);
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        $product = Product::create($validated);
+        DB::transaction(function () use ($validated) {
+            $product = Product::create($validated);
 
-        foreach (Warehouse::where('is_active', true)->get() as $warehouse) {
-            Stock::firstOrCreate(
-                ['product_id' => $product->id, 'warehouse_id' => $warehouse->id],
-                ['quantity' => 0]
-            );
-        }
+            foreach (Warehouse::where('is_active', true)->get() as $warehouse) {
+                Stock::firstOrCreate(
+                    ['product_id' => $product->id, 'warehouse_id' => $warehouse->id],
+                    ['quantity' => 0]
+                );
+            }
+        });
 
         return redirect()->route('products.index')->with('success', 'تم إضافة الصنف بنجاح.');
     }
@@ -116,20 +122,51 @@ class ProductController extends Controller
 
     private function storeImage(Request $request): ?string
     {
-        if (!$request->hasFile('image')) {
+        if (! $request->hasFile('image')) {
             return null;
         }
 
         $file = $request->file('image');
-        $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $name = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
         $dir = public_path('uploads/products');
 
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
 
         $file->move($dir, $name);
 
-        return 'uploads/products/' . $name;
+        return 'uploads/products/'.$name;
+    }
+
+    private function generateProductIdentifiers(): array
+    {
+        $serial = ((int) Product::max('id')) + 1;
+
+        do {
+            $code = 'P'.str_pad((string) $serial, 6, '0', STR_PAD_LEFT);
+            $barcode = $this->makeEan13Barcode($serial);
+            $serial++;
+        } while (
+            Product::where('code', $code)->exists()
+            || Product::where('barcode', $barcode)->exists()
+        );
+
+        return [
+            'code' => $code,
+            'barcode' => $barcode,
+        ];
+    }
+
+    private function makeEan13Barcode(int $serial): string
+    {
+        $digits = '200'.str_pad((string) $serial, 9, '0', STR_PAD_LEFT);
+        $sum = 0;
+
+        for ($index = 0; $index < 12; $index++) {
+            $sum += (int) $digits[$index] * ($index % 2 === 0 ? 1 : 3);
+        }
+
+        return $digits.((10 - ($sum % 10)) % 10);
     }
 }

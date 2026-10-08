@@ -106,10 +106,9 @@
                 @php
                     $methods = [
                         'cash' => 'نقدي',
-                        'card' => 'بطاقة',
+                        'card' => ' انستا/كاش',
                         'bank_transfer' => 'تحويل بنكي',
-                        'cheque' => 'شيك',
-                        'credit' => 'آجل / رصيد',
+              
                     ];
                 @endphp
 

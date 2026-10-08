@@ -437,7 +437,7 @@
                         <option value="card"
                             @selected(old('payment_method') == 'card')>
 
-                            بطاقة
+                             انستا/كاش
 
                         </option>
 
@@ -448,19 +448,7 @@
 
                         </option>
 
-                        <option value="cheque"
-                            @selected(old('payment_method') == 'cheque')>
 
-                            شيك
-
-                        </option>
-
-                        <option value="credit"
-                            @selected(old('payment_method') == 'credit')>
-
-                            آجل
-
-                        </option>
 
                     </select>
 

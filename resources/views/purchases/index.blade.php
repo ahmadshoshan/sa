@@ -45,20 +45,25 @@
                             <td>{{ number_format((float) $invoice->paid_amount, 2) }}</td>
                             <td>{{ number_format((float) $invoice->remaining_amount, 2) }}</td>
 
-                            <td>
-                                @if($invoice->status === 'posted')
+                                  <td>
+                                @if ($invoice->status === 'posted')
                                     <span class="badge bg-success">مرحّلة</span>
                                 @elseif($invoice->status === 'draft')
                                     <span class="badge bg-warning">مسودة</span>
                                 @elseif($invoice->status === 'cancelled')
                                     <span class="badge bg-danger">ملغاة</span>
-                                    
                                 @elseif($invoice->status === 'returned')
-                                    <span class="badge bg-danger">مرتجع</span>
+                                    {{-- <span class="badge bg-danger">مرتجع</span> --}}
                                 @else
-
-                                    <span class="badge bg-secondary">{{ $invoice->status }}</span>
+                                    {{-- <span class="badge bg-secondary">{{ $invoice->status }}</span> --}}
                                 @endif
+                                @if ($invoice->returns && $invoice->returns->count() > 0)
+                                  
+                                    <span class="badge bg-danger">مرتجع</span>
+                                   
+                                    <span class="badge bg-danger">{{ $invoice->returns->count() }}</span>
+                                @endif
+
                             </td>
 
                             <td>

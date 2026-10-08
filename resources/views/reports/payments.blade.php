@@ -26,10 +26,8 @@
                         <select name="payment_method" class="form-select">
                             <option value="">الكل</option>
                             <option value="cash" @selected(request('payment_method') == 'cash')>نقدي</option>
-                            <option value="card" @selected(request('payment_method') == 'card')>بطاقة</option>
+                            <option value="card" @selected(request('payment_method') == 'card')> انستا/كاش</option>
                             <option value="bank_transfer" @selected(request('payment_method') == 'bank_transfer')>تحويل بنكي</option>
-                            <option value="cheque" @selected(request('payment_method') == 'cheque')>شيك</option>
-                            <option value="credit" @selected(request('payment_method') == 'credit')>آجل / رصيد</option>
                         </select>
                     </div>
 

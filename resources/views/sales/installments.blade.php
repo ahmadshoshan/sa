@@ -175,9 +175,8 @@
                                                 <div class="col-4">
                                                     <select name="payment_method" class="form-select form-select-sm" required>
                                                         <option value="cash">نقدي</option>
-                                                        <option value="card">بطاقة</option>
-                                                        <option value="bank_transfer">تحويل</option>
-                                                        <option value="cheque">شيك</option>
+                                                        <option value="card"> انستا/كاش</option>
+                                                        <option value="bank_transfer">تحويل بنكي</option>
                                                     </select>
                                                 </div>
 

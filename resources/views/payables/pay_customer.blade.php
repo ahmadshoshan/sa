@@ -50,9 +50,8 @@
                         <label class="form-label fw-bold">طريقة الدفع *</label>
                         <select name="payment_method" class="form-select form-select-lg" required>
                             <option value="cash">💵 نقدي</option>
-                            <option value="card">💳 بطاقة</option>
+                            <option value="card">💳  انستا/كاش</option>
                             <option value="bank_transfer">🏦 تحويل بنكي</option>
-                            <option value="cheque">📝 شيك</option>
                         </select>
                     </div>
                     

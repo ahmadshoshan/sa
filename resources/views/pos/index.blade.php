@@ -523,9 +523,8 @@
 
             <div class="d-flex gap-2 mb-3">
                 <button class="payment-method-btn" :class="{'active': payment.method==='cash'}" @click="payment.method='cash'">💵 نقدي</button>
-                <button class="payment-method-btn" :class="{'active': payment.method==='card'}" @click="payment.method='card'">💳 بطاقة</button>
-                <button class="payment-method-btn" :class="{'active': payment.method==='bank_transfer'}" @click="payment.method='bank_transfer'">🏦 تحويل</button>
-                <button class="payment-method-btn" :class="{'active': payment.method==='credit'}" @click="payment.method='credit'">📝 آجل</button>
+                <button class="payment-method-btn" :class="{'active': payment.method==='card'}" @click="payment.method='card'">💳 انستا/كاش</button>
+                <button class="payment-method-btn" :class="{'active': payment.method==='bank_transfer'}" @click="payment.method='bank_transfer'">🏦 تحويل بنكي</button>
             </div>
 
             <div class="mb-3">

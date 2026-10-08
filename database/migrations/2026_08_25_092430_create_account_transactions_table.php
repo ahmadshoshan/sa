@@ -11,10 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('account_transactions', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('account_transactions')) {
+            Schema::create('account_transactions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('account_id')->constrained('accounts');
+                $table->string('transaction_no');
+                $table->string('type');
+                $table->decimal('amount', 15, 2);
+                $table->date('transaction_date');
+                $table->string('reference_type')->nullable();
+                $table->unsignedBigInteger('reference_id')->nullable();
+                $table->text('notes')->nullable();
+                $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamps();
+                $table->index(['account_id', 'transaction_date']);
+            });
+        }
     }
 
     /**
