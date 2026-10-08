@@ -526,11 +526,20 @@
                 <button class="payment-method-btn" :class="{'active': payment.method==='card'}" @click="payment.method='card'">💳 انستا/كاش</button>
                 <button class="payment-method-btn" :class="{'active': payment.method==='bank_transfer'}" @click="payment.method='bank_transfer'">🏦 تحويل بنكي</button>
             </div>
+ <div class="d-flex align-items-center gap-2">
+            <select x-model="customer_id" class="filter-select" style="min-width: 180px;">
+                <option value="">عميل نقدي</option>
+                @foreach($customers as $customer)
+                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                @endforeach
+            </select>
 
+           
             <div class="mb-3">
                 <label class="form-label">المبلغ المدفوع</label>
                 <input type="number" class="form-control form-control-lg" x-model.number="payment.paid" min="0" step="1">
             </div>
+        </div>
 
             <div class="d-grid gap-2 mb-3" style="grid-template-columns: repeat(4, 1fr);">
                 <button class="quick-amount-btn" @click="payment.paid = total">بالضبط</button>
